@@ -1,6 +1,7 @@
 filetype plugin indent on
 syntax on
 set number
+set incsearch
 
 inoremap ( ()<Esc>i
 inoremap { {}<Esc>i
