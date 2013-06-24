@@ -1,7 +1,6 @@
-filetype on
+filetype plugin indent on
 syntax on
-set smartindent
-set tabstop=4
-set shiftwidth=4
-set expandtab
 set number
+
+autocmd FileType html setlocal shiftwidth=2 tabstop=2
+autocmd FileType python setlocal expandtab shiftwidth=4 softtabstop=4
