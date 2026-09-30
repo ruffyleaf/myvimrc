@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Using .vimrc — a practical guide to my Vim config</title>
+<meta name="description" content="A friendly, section-by-section guide to a personal .vimrc: what the file is, how to install it, and what every setting does." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+<style>
+  :root{
+    --accent:#2563eb;
+    --accent-soft:rgba(37,99,235,.08);
+    --text:#1f2430;
+    --muted:#5b6472;
+    --bg:#ffffff;
+    --panel:#f7f8fa;
+    --border:#e6e8ec;
+    --code-bg:#1e222b;
+    --radius:10px;
+    --maxw:760px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    color:var(--text);
+    background:var(--bg);
+    font-size:18px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  /* Top bar */
+  header.topbar{
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:saturate(180%) blur(10px);
+    background:rgba(255,255,255,.82);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-inner{
+    max-width:1080px;margin:0 auto;padding:14px 24px;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--text);}
+  .brand:hover{text-decoration:none;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);display:inline-block;}
+  .topbar nav a{margin-left:20px;color:var(--muted);font-weight:500;font-size:15px;}
+  .topbar nav a:hover{color:var(--text);text-decoration:none;}
+
+  /* Layout */
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+  .layout{display:grid;grid-template-columns:230px 1fr;gap:48px;align-items:start;}
+  aside.toc{
+    position:sticky;top:78px;
+    padding:36px 0;
+    font-size:14px;
+    max-height:calc(100vh - 78px);
+    overflow:auto;
+  }
+  aside.toc .toc-title{
+    text-transform:uppercase;letter-spacing:.08em;font-size:11px;
+    color:var(--muted);font-weight:600;margin-bottom:12px;
+  }
+  aside.toc ol{list-style:none;margin:0;padding:0;}
+  aside.toc li{margin:2px 0;}
+  aside.toc a{display:block;padding:5px 12px;border-left:2px solid transparent;color:var(--muted);line-height:1.35;}
+  aside.toc a:hover{color:var(--text);text-decoration:none;background:var(--panel);}
+  aside.toc a.active{color:var(--accent);border-left-color:var(--accent);font-weight:600;background:var(--accent-soft);}
+
+  main{padding:48px 0 96px;min-width:0;}
+  .content{max-width:var(--maxw);}
+
+  /* Hero */
+  .hero{padding:8px 0 32px;}
+  .hero h1{font-size:40px;line-height:1.15;margin:0 0 14px;font-weight:700;letter-spacing:-.02em;}
+  .hero p.lead{font-size:20px;color:var(--muted);margin:0 0 26px;max-width:640px;}
+  .badges{display:flex;flex-wrap:wrap;gap:10px;}
+  .badge{
+    display:inline-flex;align-items:center;gap:7px;
+    font-size:13px;font-weight:500;color:var(--muted);
+    border:1px solid var(--border);border-radius:999px;padding:6px 12px;background:var(--panel);
+  }
+  .badge b{color:var(--text);font-weight:600;}
+
+  h2{font-size:26px;margin:56px 0 6px;font-weight:600;letter-spacing:-.01em;scroll-margin-top:90px;}
+  h2 .num{color:var(--accent);font-variant-numeric:tabular-nums;margin-right:10px;font-weight:600;}
+  h3{font-size:19px;margin:32px 0 6px;font-weight:600;}
+  p{margin:14px 0;}
+  .section-desc{color:var(--muted);margin-top:2px;}
+
+  code:not([class*="language-"]){
+    background:var(--panel);border:1px solid var(--border);
+    padding:.08em .4em;border-radius:5px;font-size:.86em;
+    font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+    color:#b43;white-space:nowrap;
+  }
+
+  /* Code blocks */
+  div.code-block{position:relative;margin:20px 0;}
+  pre[class*="language-"]{
+    border-radius:var(--radius);
+    font-size:14.5px;line-height:1.6;
+    font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;
+    border:1px solid #2a2f3a;
+    margin:0;
+  }
+  .copy-btn{
+    position:absolute;top:10px;right:10px;z-index:2;
+    font-size:12px;font-weight:500;font-family:inherit;
+    color:#c9d1e0;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.16);border-radius:6px;
+    padding:4px 10px;cursor:pointer;transition:.15s;
+  }
+  .copy-btn:hover{background:rgba(255,255,255,.18);color:#fff;}
+  .copy-btn.done{color:#7ee2a8;border-color:rgba(126,226,168,.4);}
+
+  /* Callout */
+  .callout{
+    border-left:3px solid var(--accent);background:var(--accent-soft);
+    border-radius:0 8px 8px 0;padding:14px 18px;margin:22px 0;
+    font-size:16px;color:#233;
+  }
+  .callout strong{color:var(--accent);}
+
+  /* Tables */
+  table{width:100%;border-collapse:collapse;margin:22px 0;font-size:15.5px;}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+  th{font-weight:600;color:var(--muted);font-size:13px;text-transform:uppercase;letter-spacing:.04em;}
+  td code{white-space:nowrap;}
+  tbody tr:hover{background:var(--panel);}
+
+  /* Cards grid */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:22px 0;}
+  .card{border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;background:var(--panel);}
+  .card h4{margin:0 0 4px;font-size:15px;}
+  .card p{margin:0;font-size:14.5px;color:var(--muted);line-height:1.5;}
+  .card kbd{font-family:'JetBrains Mono',monospace;}
+
+  kbd{
+    display:inline-block;font-size:.82em;padding:1px 7px;border-radius:5px;
+    background:#fff;border:1px solid var(--border);border-bottom-width:2px;
+    font-family:'JetBrains Mono',monospace;color:var(--text);
+  }
+
+  footer{
+    border-top:1px solid var(--border);margin-top:64px;padding:36px 0;
+    color:var(--muted);font-size:15px;
+  }
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;gap:0;}
+    aside.toc{display:none;}
+    .grid{grid-template-columns:1fr;}
+    body{font-size:17px;}
+    .hero h1{font-size:32px;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="./"><span class="dot"></span> myvimrc</a>
+    <nav>
+      <a href="#guide">Guide</a>
+      <a href="#reference">Reference</a>
+      <a href="https://github.com/ruffyleaf/myvimrc">Repository</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="layout">
+    <aside class="toc" id="toc">
+      <div class="toc-title">Contents</div>
+      <ol>
+        <li><a href="#what">What is a .vimrc?</a></li>
+        <li><a href="#install">Installing this config</a></li>
+        <li><a href="#appearance">Appearance &amp; movement</a></li>
+        <li><a href="#search">Search that behaves</a></li>
+        <li><a href="#tabs">Tabs &amp; indentation</a></li>
+        <li><a href="#brackets">Brackets &amp; pairing</a></li>
+        <li><a href="#windows">Mouse &amp; split windows</a></li>
+        <li><a href="#undo">Persistent undo</a></li>
+        <li><a href="#statusline">The status line</a></li>
+        <li><a href="#shortcuts">Keyboard shortcuts</a></li>
+        <li><a href="#languages">Per-language tweaks</a></li>
+        <li><a href="#reference">Full reference table</a></li>
+        <li><a href="#make-yours">Making it yours</a></li>
+      </ol>
+    </aside>
+
+    <main>
+      <div class="content">
+
+        <section class="hero" id="top">
+          <h1>Using <code style="font-size:.95em">.vimrc</code></h1>
+          <p class="lead">A plain-language, section-by-section tour of my personal Vim configuration — what the file is, how to install it, and exactly what every line does.</p>
+          <div class="badges">
+            <span class="badge"><b>Vim</b> configuration</span>
+            <span class="badge">~<b>60</b> settings</span>
+            <span class="badge"><b>Zero</b> plugins</span>
+            <span class="badge"><a href="https://github.com/ruffyleaf/myvimrc">github.com/ruffyleaf/myvimrc</a></span>
+          </div>
+        </section>
+
+        <h2 id="what"><span class="num">01</span>What is a <code style="font-size:1em">.vimrc</code>?</h2>
+        <p>The <code>.vimrc</code> is Vim's startup script. Every time you open Vim, it looks for this file and runs each line as if you had typed the command yourself. It's how you turn a bare-bones editor into one that matches how <em>you</em> like to work — line numbers, sensible search, tabs that behave, keys that do what you expect.</p>
+        <p>It lives in your home directory, so Vim finds it automatically:</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-bash"># Linux / macOS
+~/.vimrc
+
+# Windows (PowerShell)
+$HOME\_vimrc</code></pre></div>
+        <p>A few things worth knowing before we read the file:</p>
+        <p>Lines beginning with a double-quote <code>"</code> are comments. Blank lines are ignored. Later settings override earlier ones, so ordering matters when you repeat a <code>set</code>.</p>
+        <div class="callout"><strong>Editing live?</strong> After saving changes to your <code>.vimrc</code>, apply them to the current Vim session without restarting by running <code>:source %</code> (the <code>%</code> means "the file I'm editing right now").</div>
+
+        <h2 id="install"><span class="num">02</span>Installing this config</h2>
+        <p>Grab the repo and drop the file into your home directory. Back up anything you already have first.</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-bash"># Clone the repository
+git clone https://github.com/ruffyleaf/myvimrc.git
+
+# Move into it
+cd myvimrc
+
+# (Optional) preserve any existing config
+[ -f ~/.vimrc ] &amp;&amp; cp ~/.vimrc ~/.vimrc.bak
+
+# Install: copy .vimrc into your home directory
+cp .vimrc ~/.vimrc</code></pre></div>
+        <p>Open Vim on any file and the settings are instantly active. Now let's walk through what you just installed.</p>
+
+        <h2 id="appearance"><span class="num">03</span>Appearance &amp; movement</h2>
+        <p class="section-desc">The opening block — and a "Better cursor movement" section later on — sets up how the editor looks and how the viewport follows you.</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-vim">filetype plugin indent on
+syntax on
+set number
+set relativenumber
+set cursorline
+set scrolloff=8</code></pre></div>
+        <table>
+          <thead><tr><th>Setting</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td><code>filetype plugin indent on</code></td><td>Detects the file type and turns on its bundled plugins and indentation rules — the foundation the per-language tweaks later rely on.</td></tr>
+            <tr><td><code>syntax on</code></td><td>Enables syntax highlighting.</td></tr>
+            <tr><td><code>number</code> + <code>relativenumber</code></td><td>Shows absolute line numbers for the current line and relative counts above/below. Perfect for <code>5j</code>/<code>3k</code>-style jumps while still knowing where you are.</td></tr>
+            <tr><td><code>cursorline</code></td><td>Highlights the line your cursor is on so it's easy to find.</td></tr>
+            <tr><td><code>scrolloff=8</code></td><td>Keeps 8 lines of context above/below the cursor when scrolling, so you're never slammed against the window edge.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="search"><span class="num">04</span>Search that behaves</h2>
+        <p class="section-desc">These four lines make searching fast, forgiving, and quiet.</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-vim">set incsearch
+set hlsearch
+set ignorecase
+set smartcase</code></pre></div>
+        <ul>
+          <li><code>incsearch</code> — jump to the first match <em>as you type</em>, instead of waiting for Enter.</li>
+          <li><code>hlsearch</code> — highlight every match in the file. (See the <kbd>F4</kbd> shortcut below for toggling this off when it gets noisy.)</li>
+          <li><code>ignorecase</code> — searches are case-insensitive by default.</li>
+          <li><code>smartcase</code> — the clever counterpart: if your search term contains an <strong>uppercase</strong> letter, the search becomes case-sensitive automatically. Type <code>/error</code> to match everything, <code>/Error</code> to match only the capitalized form.</li>
+        </ul>
+
+        <h2 id="tabs"><span class="num">05</span>Tabs &amp; indentation</h2>
+        <p class="section-desc">Consistent, spaces-based indentation with a clean delete/backspace experience.</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-vim">set tabstop=4
+set shiftwidth=4
+set expandtab
+set autoindent
+set smartindent</code></pre></div>
+        <table>
+          <thead><tr><th>Setting</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>tabstop=4</code></td><td>A tab character is displayed 4 columns wide.</td></tr>
+            <tr><td><code>shiftwidth=4</code></td><td>Auto-indent and the <code>&gt;&gt;</code>/<code>&lt;&lt;</code> commands shift by 4 columns.</td></tr>
+            <tr><td><code>expandtab</code></td><td>Pressing <kbd>Tab</kbd> inserts 4 real spaces instead of a tab character — the key to portable, consistent files.</td></tr>
+            <tr><td><code>autoindent</code></td><td>New lines copy the indentation of the previous line.</td></tr>
+            <tr><td><code>smartindent</code></td><td>Adds a level automatically after lines ending in <code>{</code>, and helps in C-like languages.</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="brackets"><span class="num">06</span>Brackets &amp; auto-pairing</h2>
+        <p class="section-desc">Vim shows you where brackets match, and typing an opening bracket inserts its partner for you.</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-vim">set showmatch
+set matchtime=2
+
+inoremap ( ()&lt;Esc&gt;i
+inoremap { {}&lt;Esc&gt;i
+inoremap " ""&lt;Esc&gt;i
+inoremap ' ''&lt;Esc&gt;i
+inoremap [ []&lt;Esc&gt;i
+
+nnoremap &lt;C-j&gt; {
+nnoremap &lt;C-k&gt; }</code></pre></div>
+        <p><code>showmatch</code> briefly jumps the cursor to the matching bracket when you type <code>)</code>, <code>}</code>, or <code>]</code>; <code>matchtime=2</code> sets that pause to two-tenths of a second (the default is half a second, which many find too slow).</p>
+        <p>The <code>inoremap</code> lines are auto-pairing. Take <code>inoremap ( ()&lt;Esc&gt;i</code>: when you type <code>(</code> in insert mode it inserts <code>()</code>, then <code>&lt;Esc&gt;</code> steps back one character and <code>i</code> re-enters insert mode — landing the cursor <em>between</em> the pair. You get a matched bracket with the cursor correctly placed. The same idea applies to <code>{</code>, quotes, and <code>[</code>.</p>
+        <p>Once the pair is written, <kbd>Ctrl</kbd>+<kbd>j</kbd> and <kbd>Ctrl</kbd>+<kbd>k</kbd> jump to the start <code>{</code> and end <code>}</code> of the current block respectively (<code>{</code> and <code>}</code> are Vim's built-in "previous/next paragraph-or-block" motions).</p>
+
+        <h2 id="windows"><span class="num">07</span>Mouse &amp; split windows</h2>
+        <p class="section-desc">Optional mouse convenience plus predictable window placement.</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-vim">set mouse=a
+set splitright
+set splitbelow</code></pre></div>
+        <ul>
+          <li><code>mouse=a</code> — enables the mouse in all modes: click to position the cursor, drag to select, scroll between splits.</li>
+          <li><code>splitright</code> — a vertical split opens the <em>new</em> window to the right.</li>
+          <li><code>splitbelow</code> — a horizontal split opens the <em>new</em> window below.</li>
+        </ul>
+        <p>Together the split options make the layout follow the natural reading order: newest pane appears right / down.</p>
+
+        <h2 id="undo"><span class="num">08</span>Persistent undo</h2>
+        <p class="section-desc">Undo that survives closing the file — or the computer.</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-vim">set undofile
+set undolevels=1000</code></pre></div>
+        <p><code>undofile</code> writes your undo history to a hidden file (like <code>.myfile.txt.un~</code>) so <kbd>u</kbd> still works the next time you open the file. <code>undolevels=1000</code> keeps up to 1,000 undo steps instead of the modest default of 100 — generous enough that you rarely lose a step you wanted.</p>
+
+        <h2 id="statusline"><span class="num">09</span>The status line</h2>
+        <p class="section-desc">One cryptic-looking line that produces a very informative footer.</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-vim">set statusline=%f\ %h%m%r%=%-14.(%l,%c%V%)\ %P</code></pre></div>
+        <p>The backslashes are just spaces inside the option. Breaking it apart:</p>
+        <table>
+          <thead><tr><th>Token</th><th>Displays</th></tr></thead>
+          <tbody>
+            <tr><td><code>%f</code></td><td>File name (path as typed)</td></tr>
+            <tr><td><code>%h</code></td><td><code>[help]</code> flag when editing a help file</td></tr>
+            <tr><td><code>%m</code></td><td><code>[+] modified</code> flag when there are unsaved changes</td></tr>
+            <tr><td><code>%r</code></td><td><code>[RO]</code> read-only flag</td></tr>
+            <tr><td><code>%=</code></td><td>Break point: everything left of it is pushed left, everything right is pushed right</td></tr>
+            <tr><td><code>%l</code></td><td>Current line number</td></tr>
+            <tr><td><code>%c</code></td><td>Current column</td></tr>
+            <tr><td><code>%V</code></td><td>Virtual (screen) column — differs from <code>%c</code> when tabs are involved</td></tr>
+            <tr><td><code>%P</code></td><td>Percentage through the file</td></tr>
+          </tbody>
+        </table>
+        <p>The <code>%-14.( … %)</code> wrapper groups the <code>(line,col)</code> block with a minimum width of 14 and allows the middle to truncate gracefully on narrow windows. Net effect: <code>path/to/file [+]        (12,4)   57%</code>.</p>
+
+        <h2 id="shortcuts"><span class="num">10</span>Keyboard shortcuts &amp; grep</h2>
+        <p class="section-desc">Function-key conveniences, plus a grep tweak.</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-vim">nnoremap &lt;F2&gt; :w&lt;CR&gt;
+nnoremap &lt;F3&gt; :q&lt;CR&gt;
+nnoremap &lt;F4&gt; :set hlsearch!&lt;CR&gt;
+
+set grepprg=grep\ -nH\ $*</code></pre></div>
+        <div class="grid">
+          <div class="card"><h4><kbd>F2</kbd> — Save</h4><p>Writes the file (<code>:w</code>) from normal mode.</p></div>
+          <div class="card"><h4><kbd>F3</kbd> — Quit</h4><p>Closes the window (<code>:q</code>).</p></div>
+          <div class="card"><h4><kbd>F4</kbd> — Toggle highlight</h4><p>Flips search highlighting on/off with <code>:set hlsearch!</code> — great to silence stale highlights without changing your search.</p></div>
+          <div class="card"><h4><kbd>Ctrl</kbd>+<kbd>j</kbd> / <kbd>k</kbd></h4><p>Jump to the start or end of the current block, via the bracket motions above.</p></div>
+        </div>
+        <p><code>grepprg</code> changes what Vim's <code>:grep</code> command runs under the hood. Setting it to <code>grep -nH $*</code> means results include the <strong>n</strong>umber (line) and <strong>H</strong>eaders (file name), so <code>:grep pattern *.py</code> gives you clickable, file-aware matches you can step through with <code>:cnext</code>.</p>
+
+        <h2 id="languages"><span class="num">11</span>Per-language tweaks</h2>
+        <p class="section-desc">These <code>autocmd FileType</code> lines override the global tab settings for specific languages. They need <code>filetype plugin indent on</code> from section 03 to work.</p>
+        <div class="code-block"><button class="copy-btn">Copy</button><pre><code class="language-vim">autocmd FileType html       setlocal shiftwidth=2 tabstop=2 expandtab
+autocmd FileType python     setlocal expandtab shiftwidth=4 softtabstop=4
+autocmd FileType javascript setlocal expandtab shiftwidth=2 softtabstop=2
+autocmd FileType css        setlocal expandtab shiftwidth=2 softtabstop=2
+autocmd FileType json       setlocal expandtab shiftwidth=2 softtabstop=2</code></pre></div>
+        <p>The convention encoded here: <strong>4 spaces</strong> for Python, <strong>2 spaces</strong> for HTML/CSS/JS/JSON. The <code>setlocal</code> keyword means "apply to this buffer only" so switching files won't leave the wrong indent width behind. <code>softtabstop</code> makes <kbd>Tab</kbd> and <kbd>Backspace</kbd> move in those same increments.</p>
+
+        <h2 id="reference"><span class="num">12</span>Full reference</h2>
+        <p class="section-desc">Every setting in the file at a glance. Check any one of them in Vim with <code>:set &lt;name&gt;?</code>.</p>
+        <table>
+          <thead><tr><th>Setting</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td><code>set number</code> / <code>relativenumber</code></td><td>Absolute + relative line numbers</td></tr>
+            <tr><td><code>set cursorline</code></td><td>Highlight current line</td></tr>
+            <tr><td><code>set scrolloff=8</code></td><td>Keep 8 lines of scroll context</td></tr>
+            <tr><td><code>set syntax on</code></td><td>Syntax highlighting</td></tr>
+            <tr><td><code>set incsearch</code></td><td>Incremental search</td></tr>
+            <tr><td><code>set hlsearch</code></td><td>Highlight all matches</td></tr>
+            <tr><td><code>set ignorecase</code> / <code>smartcase</code></td><td>Case-insensitive unless you type capitals</td></tr>
+            <tr><td><code>set tabstop=4</code> / <code>shiftwidth=4</code></td><td>4-wide tabs and indents</td></tr>
+            <tr><td><code>set expandtab</code></td><td>Insert spaces for tabs</td></tr>
+            <tr><td><code>set autoindent</code> / <code>smartindent</code></td><td>Automatic / smarter indentation</td></tr>
+            <tr><td><code>set showmatch</code> / <code>matchtime=2</code></td><td>Flash the matching bracket briefly</td></tr>
+            <tr><td><code>set mouse=a</code></td><td>Mouse in all modes</td></tr>
+            <tr><td><code>set splitright</code> / <code>splitbelow</code></td><td>Predictable split placement</td></tr>
+            <tr><td><code>set undofile</code> / <code>undolevels=1000</code></td><td>Persistent undo, 1000 levels</td></tr>
+            <tr><td><code>set statusline=…</code></td><td>Informative status line</td></tr>
+            <tr><td><code>set grepprg=…</code></td><td>Line + file-name grep results</td></tr>
+            <tr><td><code>inoremap</code> auto-pairs</td><td>Auto-close <code>() {} "" '' []</code></td></tr>
+            <tr><td><code>nnoremap</code> <kbd>F2</kbd>/<kbd>F3</kbd>/<kbd>F4</kbd>/<kbd>Ctrl+j/k</kbd></td><td>Save / quit / toggle search / block jump</td></tr>
+          </tbody>
+        </table>
+
+        <h2 id="make-yours"><span class="num">13</span>Making it yours</h2>
+        <p>This config is intentionally plugin-free, so it works on any machine with a stock Vim — no package manager, no downloads. To adapt it:</p>
+        <ul>
+          <li><strong>Prefer tabs, not spaces?</strong> Change <code>set expandtab</code> to <code>set noexpandtab</code>.</li>
+          <li><strong>Different width?</strong> Edit <code>tabstop</code>/<code>shiftwidth</code>, and the per-language <code>autocmd</code> lines in section 11.</li>
+          <li><strong>Numbers too busy?</strong> Drop <code>set relativenumber</code> and keep just <code>set number</code>.</li>
+          <li><strong>A key feels wrong?</strong> Remap it with <code>nnoremap &lt;key&gt; &lt;action&gt;</code> in a new section at the bottom.</li>
+        </ul>
+        <p>Test every change by saving and running <code>:source %</code> — if Vim shows an error, the line has a typo; fix and source again. Because everything is plain Vim script, nothing breaks across upgrades.</p>
+        <div class="callout">Found this useful or want to suggest a setting? Open an issue or PR at <a href="https://github.com/ruffyleaf/myvimrc">github.com/ruffyleaf/myvimrc</a>.</div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p><code>.vimrc</code> guide — built from <a href="https://github.com/ruffyleaf/myvimrc/blob/master/.vimrc">myvimrc</a> by <a href="https://github.com/ruffyleaf">ruffyleaf</a>. Published with GitHub Pages.</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-vim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script>
+  // Copy buttons
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var pre = btn.parentElement.querySelector('pre');
+      var text = pre.innerText;
+      navigator.clipboard.writeText(text).then(function(){
+        btn.textContent='Copied'; btn.classList.add('done');
+        setTimeout(function(){btn.textContent='Copy';btn.classList.remove('done');},1600);
+      });
+    });
+  });
+
+  // Scroll-spy for the table of contents
+  var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+  var map = {};
+  links.forEach(function(l){ map[l.getAttribute('href').slice(1)] = l; });
+  var sections = Array.prototype.slice.call(document.querySelectorAll('main h2[id]'));
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(l){l.classList.remove('active');});
+        var a = map[e.target.id];
+        if(a) a.classList.add('active');
+      }
+    });
+  },{rootMargin:'-80px 0px -70% 0px',threshold:0});
+  sections.forEach(function(s){obs.observe(s);});
+</script>
+</body>
+</html>
